@@ -219,3 +219,20 @@ Pour chaque notion :
 - Lancement de `prisma migrate dev --name init` : migration créée et appliquée sur Postgres.
 - Créé `PrismaModule` global et `PrismaService` (connexion à la base au démarrage).
 - Compris : migration = transformer le schéma en tables SQL. Prisma Client = clé pour interroger la base depuis le code.
+
+### Vendredi 23 octobre 2026 - Authentification JWT
+- Créé les modules `auth`, `users`, `teams`.
+- Ajouté `@nestjs/jwt`, `passport-jwt`, `bcrypt` pour login sécurisé.
+- `POST /auth/login` : vérifie email + mot de passe haché, renvoie un JWT (1h).
+- `JwtStrategy` + `JwtAuthGuard` : protège les routes avec un token.
+- `RolesGuard` + décorateur `@Roles()` : autorise uniquement certains rôles.
+- `@CurrentUser()` pour récupérer l'utilisateur connecté.
+- Seed : 2 équipes, 2 managers, 12 apprenants, mots de passe hashés, ratings initialisés à 1000.
+- Compris : hachage = impossible d'inverser le mot de passe. JWT = bracelet temporaire prouvant l'identité.
+
+### Vendredi 23 octobre 2026 - Frontend Auth
+- Créé un contexte `AuthContext` (connexion, déconnexion, utilisateur courant).
+- Page de login avec formulaire email/mot de passe.
+- Routes protégées par rôle : apprenant -> `/inbox`, manager -> `/dashboard`.
+- Appel API avec token dans l'en-tête `Authorization: Bearer ...`.
+- Testé le parcours login depuis le front (redirection selon le rôle).
