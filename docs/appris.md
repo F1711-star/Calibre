@@ -236,3 +236,10 @@ Pour chaque notion :
 - Routes protégées par rôle : apprenant -> `/inbox`, manager -> `/dashboard`.
 - Appel API avec token dans l'en-tête `Authorization: Bearer ...`.
 - Testé le parcours login depuis le front (redirection selon le rôle).
+
+### Vendredi 23 octobre 2026 - Moteur de contenus
+- Créé la banque de secours (15 contenus) avec 70% manipulés et 30% fiables.
+- Chaque contenu manipulé a une technique connue à l'avance.
+- Endpoints `GET /contents/next` (apprenant) et `POST /contents/seed-fallback` (manager).
+- Le contenu est stocké en base avec `source: fallback`, `highlights` et `explanation`.
+- Compris : on choisit la technique AVANT la génération. Le code vérifiera la cohérence. L'app doit marcher sans clé API.
