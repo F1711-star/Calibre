@@ -65,7 +65,7 @@ Pour chaque petite fonctionnalité :
   3. TESTER D'ABORD : écrire le critère de réussite (même manuel).
   4. CODER PETIT : la plus petite version qui marche.
   5. VÉRIFIER : lancer le test ou refaire le parcours à la main.
-  6. EXPLIQUER : écrire dans docs/learning.md ce qu'on a appris.
+  6. EXPLIQUER : écrire dans docs/appris.md ce qu'on a appris.
   7. COMMITER : un commit = une idée claire.
 
 Rythme quotidien conseillé :
@@ -673,7 +673,7 @@ Une fonctionnalité est terminée si :
   - un test ou une vérification manuelle le prouve,
   - le code est compréhensible par un autre étudiant,
   - c'est commité avec un message clair,
-  - c'est noté dans docs/learning.md.
+  - c'est noté dans docs/appris.md.
 
 Le projet est terminé si :
   - docker compose up démarre tout,
