@@ -1,0 +1,45 @@
+# Dépendances
+node_modules
+.pnpm-store
+.pnp
+.pnp.js
+
+# Build
+dist
+build
+*.tsbuildinfo
+
+# Environnement
+.env
+.env.*
+!.env.example
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Tests
+coverage
+.nyc_output
+
+# Docker / local data
+docker-data
+*.pid
+*.seed
+*.pid.lock
+
+# IDE / OS
+.DS_Store
+.idea
+.vscode
+*.swp
+*.swo
+
+# Temp
+.tmp
+temp
+cache

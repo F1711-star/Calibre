@@ -1,0 +1,11 @@
+Phase 1: understand the problem
+
+Engineers start with the problem, not the code. Here is Calibre’s problem in your own words, so check it makes sense:
+
+	* Who has the problem? Employees who receive misleading content (a newsletter with a distorted statistic, a message with fake urgency) and may act on it or pass it on.
+	
+	* What goes wrong today? Standard training gives general advice and never checks whether someone can actually spot a manipulation. Companies can’t measure how vulnerable their teams are.
+	
+	* What does Calibre do? It gives people realistic fake content, checks whether they detect it, adapts to their weak spots, and shows managers a score per team.
+	
+	* Who uses it? Two kinds of people: the learner (answers) and the manager (reads results).
