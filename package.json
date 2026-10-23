@@ -1,0 +1,24 @@
+{
+  "name": "calibre",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plateforme d'entraînement adaptatif à la détection de désinformation et de contenu manipulé",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
+    "docker:clean": "docker compose down -v"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3"
+  }
+}
