@@ -210,3 +210,12 @@ Pour chaque notion :
 - `pnpm install` a installé tout le monorepo en une fois.
 - `pnpm build` et `pnpm test` passent.
 - Compris : `pnpm -r` exécute une commande dans chaque paquet du workspace.
+
+### Vendredi 23 octobre 2026 - Prisma + PostgreSQL
+- Installé Prisma 5.22.0 dans l'API.
+- Écrit le schéma avec Team, User, Content, Answer, SkillRating, XapiStatement.
+- Créé les enums Role, Technique, Verdict, ContentSource, ContentStatus.
+- Ajouté `explanationFeedback` (JSONB) pour stocker la note, les forces/faiblesses et la version améliorée.
+- Lancement de `prisma migrate dev --name init` : migration créée et appliquée sur Postgres.
+- Créé `PrismaModule` global et `PrismaService` (connexion à la base au démarrage).
+- Compris : migration = transformer le schéma en tables SQL. Prisma Client = clé pour interroger la base depuis le code.
