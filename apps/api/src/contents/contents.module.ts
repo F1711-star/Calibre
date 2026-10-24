@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ContentsService } from './contents.service.js';
 import { ContentsController } from './contents.controller.js';
+import { ContentsService } from './contents.service.js';
 
 @Module({
   controllers: [ContentsController],

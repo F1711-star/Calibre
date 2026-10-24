@@ -246,3 +246,16 @@ Pour chaque notion :
 
 ### Vendredi 23 octobre 2026 - Corrections
 - Ajouté CORS côté API pour autoriser `http://localhost:5173`.
+
+### Samedi 24 octobre 2026 - Jour 2 (Inbox, correction, explication)
+- Nettoyé le module contents : un seul ensemble de fichiers dans `apps/api/src/contents/`, suppression des doublons et de `prisma.config.ts`.
+- Remanié la banque de secours avec 15 messages (10 manipulés, 5 fiables), phrases de surlignage avec offsets calculés automatiquement.
+- `GET /contents/next` ne renvoie plus la réponse attendue (uniquement titre, corps, expéditeur, difficulté, id). La banque est auto-générée au premier démarrage si vide.
+- Créé le moteur de réponses : `POST /answers` (apprenant uniquement), validation stricte, normalisation des surlignages, limite de débit.
+- Règle appliquée : verdict/technique corrigés par le code uniquement. Si le contenu est fiable, `technique` attendue = `none`. Si suspect, il faut choisir une technique.
+- Protection prompt-injection : détection et neutralisation, `injectionFlag` posé, explication notée en mode local de secours.
+- Notation de l'explication locale + intégration LLM optionnelle (clé absente => repli). Le LLM ne décide jamais du verdict/technique ; il retourne uniquement `score`, `strengths`, `weaknesses`, `improvedVersion`. `improvedVersion` montré **après** la correction.
+- `POST /answers` renvoie le résultat complet avec `verdictCorrect`, `techniqueCorrect`, `feedback.improvedVersion`, ainsi que `content` avec la vérité (`isReliable`, `technique` attendue, `highlights` attendus, `explanation`).
+- Endpoints `GET /answers/mine` et `GET /answers/:id` ajoutés. Un manager ne peut pas soumettre de réponse (`403`).
+- Front moderne pour l'inbox apprenant : surligneur de texte, formulaire verdict/technique/explication, écran de correction avec indices attendus, forces/faiblesses, explication modèle et passage au suivant.
+- Style appliqué à login, header, inbox et dashboard. Tests API passent, build web/API OK, lint vérifié.

@@ -1,44 +1,96 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Content, Prisma, Technique } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { FALLBACK_CONTENTS } from './fallback.js';
 
+export type LearnerContent = {
+  id: string;
+  title: string;
+  body: string;
+  senderName: string;
+  difficulty: number;
+  createdAt: Date;
+};
+
 @Injectable()
-export class ContentsService {
-  constructor(private prisma: PrismaService) {}
+export class ContentsService implements OnModuleInit {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async onModuleInit() {
+    const count = await this.prisma.content.count();
+    if (count === 0) {
+      await this.seedFallback();
+    }
+  }
 
   async getNextForLearner(userId: string) {
-    // Pour l'instant, on prend un contenu depuis la banque de secours
-    // et on le crée dans la base s'il n'existe pas déjà
-    const existing = await this.prisma.content.findFirst({
-      where: { status: 'ready' },
-      orderBy: { createdAt: 'asc' },
+    const content = await this.prisma.content.findFirst({
+      where: {
+        status: 'ready',
+        answers: { none: { userId } },
+      },
+      orderBy: [{ difficulty: 'asc' }, { createdAt: 'asc' }],
     });
 
-    if (existing) {
-      return existing;
+    if (!content) {
+      return { content: null, remaining: 0 };
     }
 
-    // Créer un contenu à partir de la banque de secours
-    const fallback = FALLBACK_CONTENTS.find((c) => !c.isReliable) || FALLBACK_CONTENTS[0];
-    return this.prisma.content.create({
-      data: {
-        title: fallback.title,
-        body: fallback.body,
-        senderName: fallback.senderName,
-        isReliable: fallback.isReliable,
-        technique: fallback.technique as any,
-        difficulty: fallback.difficulty,
-        highlights: fallback.highlights as any,
-        explanation: fallback.explanation,
-        source: 'fallback',
+    const remaining = await this.prisma.content.count({
+      where: {
         status: 'ready',
+        answers: { none: { userId } },
       },
     });
+
+    return { content: this.toLearnerContent(content), remaining };
   }
 
   async listAll() {
     return this.prisma.content.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ createdAt: 'desc' }],
+      include: { _count: { select: { answers: true } } },
     });
+  }
+
+  async seedFallback() {
+    let created = 0;
+
+    for (const fallback of FALLBACK_CONTENTS) {
+      const existing = await this.prisma.content.findFirst({
+        where: { title: fallback.title, source: 'fallback' },
+        select: { id: true },
+      });
+      if (existing) continue;
+
+      await this.prisma.content.create({
+        data: {
+          title: fallback.title,
+          body: fallback.body,
+          senderName: fallback.senderName,
+          isReliable: fallback.isReliable,
+          technique: fallback.technique as Technique,
+          difficulty: fallback.difficulty,
+          highlights: fallback.highlights as unknown as Prisma.InputJsonValue,
+          explanation: fallback.explanation,
+          source: 'fallback',
+          status: 'ready',
+        },
+      });
+      created++;
+    }
+
+    return { created, total: FALLBACK_CONTENTS.length };
+  }
+
+  toLearnerContent(content: Content): LearnerContent {
+    return {
+      id: content.id,
+      title: content.title,
+      body: content.body,
+      senderName: content.senderName,
+      difficulty: content.difficulty,
+      createdAt: content.createdAt,
+    };
   }
 }

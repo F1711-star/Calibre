@@ -7,7 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 function HomeRedirect() {
   const { user, loading } = useAuth();
-  if (loading) return <p>Chargement...</p>;
+  if (loading) return <div className="page-loading">Chargement...</div>;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === 'manager') return <Navigate to="/dashboard" replace />;
   return <Navigate to="/inbox" replace />;
