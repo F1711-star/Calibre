@@ -243,3 +243,6 @@ Pour chaque notion :
 - Endpoints `GET /contents/next` (apprenant) et `POST /contents/seed-fallback` (manager).
 - Le contenu est stocké en base avec `source: fallback`, `highlights` et `explanation`.
 - Compris : on choisit la technique AVANT la génération. Le code vérifiera la cohérence. L'app doit marcher sans clé API.
+
+### Vendredi 23 octobre 2026 - Corrections
+- Ajouté CORS côté API pour autoriser `http://localhost:5173`.
