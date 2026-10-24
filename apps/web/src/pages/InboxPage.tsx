@@ -142,7 +142,7 @@ export default function InboxPage() {
             <span className="empty-state__icon">✓</span>
             <h2>Tous les contenus ont été traités</h2>
             <p>Vous avez terminé la banque d'exercices disponible. Les prochains contenus arriveront bientôt.</p>
-            <button type="button" className="btn btn--primary" onClick={() => void loadNext()}>
+            <button type="button" className="btn btn--primary" onClick={() => { setError(''); void loadNext(); }}>
               Vérifier à nouveau
             </button>
           </section>
