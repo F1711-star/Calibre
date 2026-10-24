@@ -266,3 +266,8 @@ Pour chaque notion :
 - Top contributeurs de l'équipe (tri par réponses justes).
 - Score de maturité calculé (60% réussite + 25% score explication + 15% couverture) et **masqué si < 5 apprenants** dans l'équipe (seuil `MIN_TEAM_SIZE_FOR_MATURITY`).
 - Dashboard front moderne avec cartes, heatmap, classement. Build web/API OK, tests OK.
+
+### Lundi 26 octobre 2026 - Jour 4 (Élo + sélection adaptative + xAPI)
+- Initialisé `SkillRating` par (utilisateur, technique) à 1000. Après chaque réponse, mise à jour Elo (K=32) avec difficulté convertie en rating adverse.
+- Sélection adaptative dans `GET /contents/next` : cible la technique au rating le plus faible, ~30 % de contenus fiables dans le flux, repli vers d'autres techniques/banque si nécessaire.
+- Génération de statements xAPI (`answered`) à chaque réponse, stockés en JSONB (acteur, groupe équipe, contexte, résultat). Endpoints `GET /xapi/export` (apprenant) et `GET /xapi/export/team` (manager). Tests et builds OK.

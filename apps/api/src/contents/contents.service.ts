@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Content, Prisma, Technique } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { FALLBACK_CONTENTS } from './fallback.js';
+import { EloService } from '../answers/elo.service.js';
 
 export type LearnerContent = {
   id: string;
@@ -12,9 +13,20 @@ export type LearnerContent = {
   createdAt: Date;
 };
 
+const MANIPULATION_TECHNIQUES: Technique[] = [
+  'deformed_statistic',
+  'invented_quote',
+  'fake_urgency',
+  'dubious_source',
+  'spoofed_sender',
+];
+
 @Injectable()
 export class ContentsService implements OnModuleInit {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly elo: EloService,
+  ) {}
 
   async onModuleInit() {
     const count = await this.prisma.content.count();
@@ -23,14 +35,78 @@ export class ContentsService implements OnModuleInit {
     }
   }
 
+  private difficultyForRating(rating: number): number {
+    if (rating < 950) return 3;
+    if (rating > 1050) return 1;
+    return 2;
+  }
+
   async getNextForLearner(userId: string) {
-    const content = await this.prisma.content.findFirst({
-      where: {
-        status: 'ready',
-        answers: { none: { userId } },
-      },
-      orderBy: [{ difficulty: 'asc' }, { createdAt: 'asc' }],
+    const weakest = await this.elo.getWeakestTechnique(userId);
+    const ratings = await this.prisma.skillRating.findUnique({
+      where: { userId_technique: { userId, technique: weakest } },
+      select: { rating: true },
     });
+    const targetDifficulty = this.difficultyForRating(ratings?.rating ?? 1000);
+
+    const seen = await this.prisma.answer.findMany({
+      where: { userId },
+      select: { contentId: true },
+    });
+    const seenIds = seen.map((s) => s.contentId);
+
+    const baseWhere = {
+      status: 'ready' as const,
+      id: { notIn: seenIds },
+    };
+
+    const roll = Math.random();
+    const wantsReliable = roll < 0.3;
+
+    let content: Content | null = null;
+
+    if (wantsReliable) {
+      content = await this.prisma.content.findFirst({
+        where: { ...baseWhere, isReliable: true },
+        orderBy: [{ difficulty: 'asc' }, { createdAt: 'asc' }],
+      });
+    }
+
+    if (!content && weakest !== 'none') {
+      content = await this.prisma.content.findFirst({
+        where: { ...baseWhere, isReliable: false, technique: weakest },
+        orderBy: [{ difficulty: 'asc' }, { createdAt: 'asc' }],
+      });
+    }
+
+    if (!content && weakest !== 'none') {
+      const others = MANIPULATION_TECHNIQUES.filter((t) => t !== weakest);
+      content = await this.prisma.content.findFirst({
+        where: { ...baseWhere, isReliable: false, technique: { in: others } },
+        orderBy: [{ difficulty: 'asc' }, { createdAt: 'asc' }],
+      });
+    }
+
+    if (!content) {
+      content = await this.prisma.content.findFirst({
+        where: { ...baseWhere, isReliable: false },
+        orderBy: [{ difficulty: 'asc' }, { createdAt: 'asc' }],
+      });
+    }
+
+    if (!content) {
+      content = await this.prisma.content.findFirst({
+        where: baseWhere,
+        orderBy: [{ difficulty: 'asc' }, { createdAt: 'asc' }],
+      });
+    }
+
+    if (!content) {
+      content = await this.prisma.content.findFirst({
+        where: { status: 'ready', answers: { none: { userId } } },
+        orderBy: [{ difficulty: 'asc' }, { createdAt: 'asc' }],
+      });
+    }
 
     if (!content) {
       return { content: null, remaining: 0 };
@@ -39,11 +115,11 @@ export class ContentsService implements OnModuleInit {
     const remaining = await this.prisma.content.count({
       where: {
         status: 'ready',
-        answers: { none: { userId } },
+        id: { notIn: [...seenIds, content.id] },
       },
     });
 
-    return { content: this.toLearnerContent(content), remaining };
+    return { content: this.toLearnerContent(content), remaining: remaining + 0 };
   }
 
   async listAll() {

@@ -4,15 +4,27 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateAnswerDto, HighlightDto } from './dto/create-answer.dto.js';
 import { detectInjection, sanitizeExplanation } from './injection-detector.js';
 import { ExplanationFeedback, ExplanationGraderService } from './explanation-grader.service.js';
+import { EloService } from './elo.service.js';
+import { XapiService } from '../xapi/xapi.service.js';
 
 @Injectable()
 export class AnswersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly grader: ExplanationGraderService,
+    private readonly elo: EloService,
+    private readonly xapi: XapiService,
   ) {}
 
   async submit(userId: string, dto: CreateAnswerDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, teamId: true },
+    });
+    if (!user) {
+      throw new NotFoundException('Utilisateur introuvable');
+    }
+
     const content = await this.prisma.content.findUnique({ where: { id: dto.contentId } });
     if (!content || content.status !== 'ready') {
       throw new NotFoundException('Contenu introuvable');
@@ -55,6 +67,11 @@ export class AnswersService {
         injectionFlag,
       },
     });
+
+    const success = verdictCorrect && techniqueCorrect;
+    const targetTechnique: Technique = content.isReliable ? 'none' : content.technique;
+    await this.elo.updateAfterAnswer(userId, targetTechnique, content.difficulty, success);
+    await this.xapi.recordAnswer(user, answer, content);
 
     return this.serialize(answer, content, feedback);
   }

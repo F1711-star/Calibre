@@ -9,9 +9,10 @@ import { TeamsModule } from './teams.module.js';
 import { ContentsModule } from './contents/contents.module.js';
 import { AnswersModule } from './answers/answers.module.js';
 import { StatsModule } from './stats/stats.module.js';
+import { XapiModule } from './xapi/xapi.module.js';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, TeamsModule, ContentsModule, AnswersModule, StatsModule],
+  imports: [PrismaModule, AuthModule, UsersModule, TeamsModule, ContentsModule, AnswersModule, StatsModule, XapiModule],
   controllers: [AppController],
   providers: [AppService],
 })
