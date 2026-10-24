@@ -259,3 +259,10 @@ Pour chaque notion :
 - Endpoints `GET /answers/mine` et `GET /answers/:id` ajoutés. Un manager ne peut pas soumettre de réponse (`403`).
 - Front moderne pour l'inbox apprenant : surligneur de texte, formulaire verdict/technique/explication, écran de correction avec indices attendus, forces/faiblesses, explication modèle et passage au suivant.
 - Style appliqué à login, header, inbox et dashboard. Tests API passent, build web/API OK, lint vérifié.
+
+### Samedi 24 octobre 2026 - Jour 3 (Dashboard manager)
+- Ajouté `GET /stats/team` (manager uniquement) : agrégats par équipe.
+- Heatmap par technique (taux de réussite verdict+technique corrects) avec badge coloré selon le taux.
+- Top contributeurs de l'équipe (tri par réponses justes).
+- Score de maturité calculé (60% réussite + 25% score explication + 15% couverture) et **masqué si < 5 apprenants** dans l'équipe (seuil `MIN_TEAM_SIZE_FOR_MATURITY`).
+- Dashboard front moderne avec cartes, heatmap, classement. Build web/API OK, tests OK.

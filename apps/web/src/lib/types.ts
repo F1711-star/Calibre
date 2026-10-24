@@ -63,9 +63,39 @@ export const TECHNIQUE_OPTIONS: Array<{ value: Technique; label: string }> = [
   { value: 'invented_quote', label: 'Citation inventée' },
   { value: 'fake_urgency', label: 'Urgence artificielle' },
   { value: 'dubious_source', label: 'Source douteuse' },
-  { value: 'spoofed_sender', label: 'Expéditeur usurpé' },
+  { value: 'spoofed_sender', label: "Expéditeur usurpé" },
 ];
 
 export function techniqueLabel(technique: Technique): string {
   return TECHNIQUE_OPTIONS.find((option) => option.value === technique)?.label ?? technique;
 }
+
+export type TeamDashboard = {
+  team: {
+    id: string;
+    name: string;
+    memberCount: number;
+    learnerCount: number;
+  };
+  totals: {
+    answersCount: number;
+    correctCount: number;
+  };
+  heatmap: Array<{
+    technique: Technique;
+    totalAnswers: number;
+    correct: number;
+    rate: number;
+  }>;
+  topContributors: Array<{
+    userId: string;
+    email: string;
+    answersCount: number;
+    correctCount: number;
+    accuracy: number;
+    averageScore: number;
+  }>;
+  maturityScore: number | null;
+  maturityVisible: boolean;
+  minTeamSizeForMaturity: number;
+};
