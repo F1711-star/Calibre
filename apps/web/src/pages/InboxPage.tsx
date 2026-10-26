@@ -5,12 +5,7 @@ import EmailBody from '../components/EmailBody';
 import { apiFetch } from '../lib/api';
 import { TECHNIQUE_OPTIONS, techniqueLabel } from '../lib/types';
 import type { AnswerResult, Highlight, LearnerContent, Technique, Verdict } from '../lib/types';
-
-const DIFFICULTY_LABELS: Record<number, string> = {
-  1: 'Facile',
-  2: 'Moyen',
-  3: 'Difficile',
-};
+import { useI18n } from '../context/I18nContext';
 
 function mergeHighlights(highlights: Highlight[]): Highlight[] {
   const sorted = [...highlights].sort((a, b) => a.start - b.start);
@@ -37,6 +32,7 @@ function senderInitials(senderName: string): string {
 }
 
 export default function InboxPage() {
+  const { t } = useI18n();
   const [content, setContent] = useState<LearnerContent | null>(null);
   const [remaining, setRemaining] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -48,6 +44,12 @@ export default function InboxPage() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<AnswerResult | null>(null);
   const correctionRef = useRef<HTMLElement>(null);
+
+  const DIFFICULTY_LABELS: Record<number, string> = {
+    1: t.inbox.difficultEasy,
+    2: t.inbox.difficultMedium,
+    3: t.inbox.difficultHard,
+  };
 
   async function loadNext() {
     setLoading(true);
@@ -62,7 +64,7 @@ export default function InboxPage() {
       setContent(data.content);
       setRemaining(data.remaining);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Impossible de charger le contenu');
+      setError(err instanceof Error ? err.message : t.common.error);
     } finally {
       setLoading(false);
     }
@@ -73,7 +75,7 @@ export default function InboxPage() {
   }, []);
 
   const handleHighlight = (range: { start: number; end: number }) => {
-    setHighlights((previous) => mergeHighlights([...previous, { ...range, reason: 'Passage surligné' }]));
+    setHighlights((previous) => mergeHighlights([...previous, { ...range, reason: t.common.passagesHighlighted(1) }]));
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -97,7 +99,7 @@ export default function InboxPage() {
       setRemaining((value) => Math.max(0, value - 1));
       window.setTimeout(() => correctionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Impossible d'envoyer la réponse");
+      setError(err instanceof Error ? err.message : t.common.error);
     } finally {
       setSubmitting(false);
     }
@@ -118,13 +120,11 @@ export default function InboxPage() {
       <main className="page">
         <div className="page-heading">
           <div>
-            <span className="eyebrow">Boîte de réception</span>
-            <h1>Exercice de détection</h1>
-            <p className="page-heading__subtitle">
-              Analysez le message, surlignez les indices et expliquez votre raisonnement.
-            </p>
+            <span className="eyebrow">{t.inbox.eyebrow}</span>
+            <h1>{t.inbox.title}</h1>
+            <p className="page-heading__subtitle">{t.inbox.subtitle}</p>
           </div>
-          <span className="session-pill">{remaining} contenu{remaining > 1 ? 's' : ''} restant{remaining > 1 ? 's' : ''}</span>
+          <span className="session-pill">{t.common.contentsRemaining(remaining)}</span>
         </div>
 
         {error && (
@@ -141,10 +141,10 @@ export default function InboxPage() {
         ) : !content ? (
           <section className="panel empty-state">
             <span className="empty-state__icon">✓</span>
-            <h2>Tous les contenus ont été traités</h2>
-            <p>Vous avez terminé tous les contenus disponibles pour votre compte. Si de nouveaux exercices sont ajoutés, utilisez le bouton ci-dessous pour vérifier.</p>
+            <h2>{t.inbox.emptyTitle}</h2>
+            <p>{t.inbox.emptyDesc}</p>
             <button type="button" className="btn btn--primary" onClick={() => { setError(''); setLoading(true); void loadNext(); }}>
-              Vérifier à nouveau
+              {t.common.verifyAgain}
             </button>
           </section>
         ) : (
@@ -156,10 +156,10 @@ export default function InboxPage() {
                 </span>
                 <div className="email-card__identity">
                   <strong>{content.senderName}</strong>
-                  <span>à moi · aujourd'hui</span>
+                  <span>{t.inbox.toMe}</span>
                 </div>
                 <span className={`difficulty-badge difficulty-badge--${content.difficulty}`}>
-                  {DIFFICULTY_LABELS[content.difficulty] ?? 'Standard'}
+                  {DIFFICULTY_LABELS[content.difficulty] ?? t.inbox.difficultMedium}
                 </span>
               </div>
 
@@ -167,7 +167,7 @@ export default function InboxPage() {
                 <h2>{content.title}</h2>
                 {!result && (
                   <p className="hint hint--accent">
-                    Sélectionnez à la souris les passages qui vous semblent suspects : ils seront surlignés.
+                    {t.inbox.hintSelect}
                   </p>
                 )}
               </div>
@@ -182,19 +182,19 @@ export default function InboxPage() {
 
               {!result && highlights.length > 0 && (
                 <div className="email-card__footer">
-                  <span>{highlights.length} passage{highlights.length > 1 ? 's' : ''} surligné{highlights.length > 1 ? 's' : ''}</span>
+                  <span>{t.common.passagesHighlighted(highlights.length)}</span>
                   <button type="button" className="btn btn--link" onClick={() => setHighlights([])}>
-                    Effacer les surlignages
+                    {t.common.clearHighlights}
                   </button>
                 </div>
               )}
 
               {result && (
                 <div className="email-card__footer email-card__footer--legend">
-                  <strong>Indices attendus</strong>
+                  <strong>{t.inbox.legend}</strong>
                   <div className="legend">
                     {(result.content.highlights as Highlight[]).length === 0 ? (
-                      <span className="hint">Aucun indice de manipulation dans ce message.</span>
+                      <span className="hint">{t.inbox.noHints}</span>
                     ) : (
                       (result.content.highlights as Highlight[]).map((highlight, index) => (
                         <span key={`${highlight.start}-${index}`} className="legend__item">
@@ -211,13 +211,13 @@ export default function InboxPage() {
             {!result ? (
               <form className="panel form-panel" onSubmit={handleSubmit}>
                 <div className="form-panel__heading">
-                  <span className="step-badge">Votre analyse</span>
-                  <h2>Que concludez-vous ?</h2>
+                  <span className="step-badge">{t.inbox.eyebrow}</span>
+                  <h2>{t.inbox.formTitle}</h2>
                 </div>
 
                 <div className="field">
-                  <span className="label">Verdict</span>
-                  <div className="segmented" role="group" aria-label="Verdict">
+                  <span className="label">{t.inbox.verdict}</span>
+                  <div className="segmented" role="group" aria-label={t.inbox.verdict}>
                     <button
                       type="button"
                       className={verdict === 'reliable' ? 'active active--reliable' : ''}
@@ -226,20 +226,20 @@ export default function InboxPage() {
                         setTechnique('none');
                       }}
                     >
-                      Fiable
+                      {t.inbox.reliable}
                     </button>
                     <button
                       type="button"
                       className={verdict === 'suspicious' ? 'active active--suspicious' : ''}
                       onClick={() => setVerdict('suspicious')}
                     >
-                      Suspect
+                      {t.inbox.suspicious}
                     </button>
                   </div>
                 </div>
 
                 <label className="field">
-                  <span className="label">Technique de manipulation</span>
+                  <span className="label">{t.inbox.technique}</span>
                   <select
                     className="select"
                     value={technique}
@@ -248,34 +248,34 @@ export default function InboxPage() {
                   >
                     {TECHNIQUE_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
-                        {option.label}
+                        {option.value === 'none' ? t.inbox.noManipulation : option.label}
                       </option>
                     ))}
                   </select>
                   {verdict === 'suspicious' && technique === 'none' && (
-                    <span className="hint hint--warning">Choisissez la technique qui correspond à l'indice principal.</span>
+                    <span className="hint hint--warning">{t.inbox.chooseTechnique}</span>
                   )}
                 </label>
 
                 <label className="field">
                   <span className="label">
-                    Votre explication <span className="label__counter">{explanation.length}/1000</span>
+                    {t.inbox.explanation} <span className="label__counter">{explanation.length}/1000</span>
                   </span>
                   <textarea
                     className="textarea"
                     rows={5}
                     maxLength={1000}
-                    placeholder="Expliquez pourquoi ce message est fiable ou suspect, en citant les indices que vous avez repérés."
+                    placeholder={t.inbox.explanationPlaceholder}
                     value={explanation}
                     onChange={(event) => setExplanation(event.target.value)}
                   />
                 </label>
 
                 <button type="submit" className="btn btn--primary btn--block" disabled={!canSubmit}>
-                  {submitting ? 'Analyse en cours...' : 'Envoyer ma réponse'}
+                  {submitting ? t.inbox.sending : t.inbox.send}
                 </button>
                 <p className="hint hint--center">
-                  Verdict et technique sont corrigés par le code. L'IA ne note que la qualité de votre explication.
+                  {t.inbox.note}
                 </p>
               </form>
             ) : (
@@ -283,11 +283,11 @@ export default function InboxPage() {
                 <div className={`result-banner ${allCorrect ? 'result-banner--success' : 'result-banner--error'}`}>
                   <span className="result-banner__icon">{allCorrect ? '✓' : '!'}</span>
                   <div className="result-banner__text">
-                    <h2>{allCorrect ? 'Bonne analyse' : 'À revoir'}</h2>
+                    <h2>{allCorrect ? t.inbox.correction.good : t.inbox.correction.review}</h2>
                     <p>
                       {allCorrect
-                        ? 'Vous avez identifié le bon verdict et la bonne technique.'
-                        : 'La correction vous montre les indices à retenir pour la prochaine fois.'}
+                        ? t.inbox.correction.goodDesc
+                        : t.inbox.correction.reviewDesc}
                     </p>
                   </div>
                   {score !== null && (
@@ -300,28 +300,28 @@ export default function InboxPage() {
 
                 {result.injectionFlag && (
                   <div className="alert alert--warning">
-                    Des instructions ont été détectées dans votre explication. Elles ont été ignorées et n'ont pas influencé la correction.
+                    {t.inbox.correction.injection}
                   </div>
                 )}
 
                 <div className="result-checks">
                   <div className={`check ${result.verdictCorrect ? 'check--ok' : 'check--bad'}`}>
                     <span>{result.verdictCorrect ? '✓' : '×'}</span>
-                    Verdict : {result.verdict === 'reliable' ? 'fiable' : 'suspect'}
+                    {t.inbox.correction.verdict} : {result.verdict === 'reliable' ? t.inbox.reliable.toLowerCase() : t.inbox.suspicious.toLowerCase()}
                   </div>
                   <div className={`check ${result.techniqueCorrect ? 'check--ok' : 'check--bad'}`}>
                     <span>{result.techniqueCorrect ? '✓' : '×'}</span>
-                    Technique : {techniqueLabel(result.technique)}
+                    {t.inbox.correction.technique} : {techniqueLabel(result.technique)}
                   </div>
                 </div>
 
                 <div className="result-section">
-                  <h3>Technique attendue</h3>
+                  <h3>{t.inbox.correction.expectedTechnique}</h3>
                   <p>{techniqueLabel(result.content.expectedTechnique)}</p>
                 </div>
 
                 <div className="result-section">
-                  <h3>Ce qu'il fallait repérer</h3>
+                  <h3>{t.inbox.correction.toSpot}</h3>
                   <p>{result.content.explanation}</p>
                 </div>
 
@@ -329,7 +329,7 @@ export default function InboxPage() {
                   <>
                     <div className="feedback-grid">
                       <div className="feedback-card feedback-card--good">
-                        <h3>Points forts</h3>
+                        <h3>{t.inbox.correction.strengths}</h3>
                         <ul>
                           {result.feedback.strengths.map((item) => (
                             <li key={item}>{item}</li>
@@ -337,7 +337,7 @@ export default function InboxPage() {
                         </ul>
                       </div>
                       <div className="feedback-card feedback-card--warn">
-                        <h3>À améliorer</h3>
+                        <h3>{t.inbox.correction.weaknesses}</h3>
                         <ul>
                           {result.feedback.weaknesses.map((item) => (
                             <li key={item}>{item}</li>
@@ -348,8 +348,8 @@ export default function InboxPage() {
 
                     <div className="improved-version">
                       <span className="improved-version__label">
-                        Explication modèle
-                        <span>{result.feedback.source === 'llm' ? 'IA' : 'mode local'}</span>
+                        {t.inbox.correction.modelExplanation}
+                        <span>{result.feedback.source === 'llm' ? t.inbox.correction.ai : t.inbox.correction.local}</span>
                       </span>
                       <p>{result.feedback.improvedVersion}</p>
                       {result.feedback.note && <p className="hint">{result.feedback.note}</p>}
@@ -358,7 +358,7 @@ export default function InboxPage() {
                 )}
 
                 <button type="button" className="btn btn--primary btn--block" onClick={() => void loadNext()}>
-                  Contenu suivant
+                  {t.inbox.correction.next}
                 </button>
               </section>
             )}

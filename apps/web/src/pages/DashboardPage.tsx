@@ -3,6 +3,7 @@ import AppHeader from '../components/AppHeader';
 import { apiFetch } from '../lib/api';
 import { techniqueLabel } from '../lib/types';
 import type { TeamDashboard } from '../lib/types';
+import { useI18n } from '../context/I18nContext';
 
 function heatmapColor(rate: number, total: number): string {
   if (total === 0) return 'heatmap-cell heatmap-cell--empty';
@@ -13,6 +14,7 @@ function heatmapColor(rate: number, total: number): string {
 }
 
 export default function DashboardPage() {
+  const { t } = useI18n();
   const [data, setData] = useState<TeamDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -20,7 +22,7 @@ export default function DashboardPage() {
   useEffect(() => {
     apiFetch<TeamDashboard>('/stats/team')
       .then(setData)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Erreur de chargement'))
+      .catch((err) => setError(err instanceof Error ? err.message : t.common.error))
       .finally(() => setLoading(false));
   }, []);
 
@@ -30,15 +32,15 @@ export default function DashboardPage() {
       <main className="page">
         <div className="page-heading">
           <div>
-            <span className="eyebrow">Tableau de bord</span>
-            <h1>Pilotage de l'équipe</h1>
+            <span className="eyebrow">{t.dashboard.eyebrow}</span>
+            <h1>{t.dashboard.title}</h1>
             <p className="page-heading__subtitle">
-              Suivi par technique, classements et score de maturité selon le seuil de confidentialité.
+              {t.dashboard.subtitle}
             </p>
           </div>
           {data && (
             <span className="session-pill">
-              {data.team.name} · {data.team.learnerCount} apprenant{data.team.learnerCount > 1 ? 's' : ''}
+              {data.team.name} · {t.dashboard.members(data.team.learnerCount)}
             </span>
           )}
         </div>
@@ -60,31 +62,31 @@ export default function DashboardPage() {
             <>
               <div className="dashboard-grid dashboard-grid--stats">
                 <section className="panel stat-card">
-                  <span className="stat-card__label">Réponses soumises</span>
+                  <span className="stat-card__label">{t.dashboard.answersSubmitted}</span>
                   <span className="stat-card__value">{data.totals.answersCount}</span>
-                  <span className="stat-card__hint">Total sur l'équipe</span>
+                  <span className="stat-card__hint">{t.dashboard.totalTeam}</span>
                 </section>
                 <section className="panel stat-card">
-                  <span className="stat-card__label">Réponses justes</span>
+                  <span className="stat-card__label">{t.dashboard.correctAnswers}</span>
                   <span className="stat-card__value stat-card__value--success">
                     {data.totals.correctCount} / {data.totals.answersCount}
                   </span>
                   <span className="stat-card__hint">
-                    Verdict + technique corrects ({data.totals.answersCount === 0 ? 0 : Math.round((data.totals.correctCount / data.totals.answersCount) * 100)}%)
+                    {t.dashboard.verdictTechniqueCorrect} ({data.totals.answersCount === 0 ? 0 : Math.round((data.totals.correctCount / data.totals.answersCount) * 100)}%)
                   </span>
                 </section>
                 <section className="panel stat-card">
-                  <span className="stat-card__label">Score de maturité</span>
+                  <span className="stat-card__label">{t.dashboard.maturityScore}</span>
                   {data.maturityVisible && data.maturityScore !== null ? (
                     <>
                       <span className="stat-card__value stat-card__value--accent">{data.maturityScore}</span>
-                      <span className="stat-card__hint">/ 100 · seuil {data.minTeamSizeForMaturity}+ membres</span>
+                      <span className="stat-card__hint">{t.dashboard.maturityThreshold(data.minTeamSizeForMaturity)}</span>
                     </>
                   ) : (
                     <>
-                      <span className="stat-card__value stat-card__value--muted">Masqué</span>
+                      <span className="stat-card__value stat-card__value--muted">{t.dashboard.hidden}</span>
                       <span className="stat-card__hint">
-                        Nécessite au moins {data.minTeamSizeForMaturity} apprenants dans l'équipe
+                        {t.dashboard.maturityHidden(data.minTeamSizeForMaturity)}
                       </span>
                     </>
                   )}
@@ -95,17 +97,17 @@ export default function DashboardPage() {
                 <section className="panel heatmap-panel">
                   <div className="panel__header">
                     <div>
-                      <span className="eyebrow">Heatmap</span>
-                      <h2>Réussite par technique</h2>
-                      <p>Taux de réponses justes (verdict + technique corrects) par type de manipulation.</p>
+                      <span className="eyebrow">{t.dashboard.heatmapEyebrow}</span>
+                      <h2>{t.dashboard.heatmapTitle}</h2>
+                      <p>{t.dashboard.heatmapSubtitle}</p>
                     </div>
                   </div>
                   <div className="heatmap-table">
                     <div className="heatmap-table__header">
-                      <span>Technique</span>
-                      <span>Réponses</span>
-                      <span>Justes</span>
-                      <span>Taux</span>
+                      <span>{t.dashboard.technique}</span>
+                      <span>{t.dashboard.answers}</span>
+                      <span>{t.dashboard.correct}</span>
+                      <span>{t.dashboard.rate}</span>
                     </div>
                     {data.heatmap.map((cell) => (
                       <div key={cell.technique} className="heatmap-table__row">
@@ -123,14 +125,14 @@ export default function DashboardPage() {
                 <section className="panel ranking-panel">
                   <div className="panel__header">
                     <div>
-                      <span className="eyebrow">Classement</span>
-                      <h2>Top contributeurs</h2>
-                      <p>Triés par nombre de réponses justes (décroissant).</p>
+                      <span className="eyebrow">{t.dashboard.rankingEyebrow}</span>
+                      <h2>{t.dashboard.rankingTitle}</h2>
+                      <p>{t.dashboard.rankingSubtitle}</p>
                     </div>
                   </div>
                   <div className="ranking-list">
                     {data.topContributors.length === 0 ? (
-                      <p className="hint">Aucune réponse enregistrée pour cette équipe.</p>
+                      <p className="hint">{t.dashboard.noAnswers}</p>
                     ) : (
                       data.topContributors.map((contributor, index) => (
                         <div key={contributor.userId} className="ranking-item">
@@ -138,7 +140,7 @@ export default function DashboardPage() {
                           <div className="ranking-item__identity">
                             <strong>{contributor.email}</strong>
                             <span>
-                              {contributor.answersCount} réponse{contributor.answersCount > 1 ? 's' : ''} · moyenne{' '}
+                              {t.dashboard.responses(contributor.answersCount)} · {t.dashboard.average}{' '}
                               {contributor.averageScore}/100
                             </span>
                           </div>

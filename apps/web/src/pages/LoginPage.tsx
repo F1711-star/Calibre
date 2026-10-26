@@ -2,6 +2,8 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useI18n } from '../context/I18nContext';
+import { useTheme } from '../context/ThemeContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -10,6 +12,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { locale, setLocale, t } = useI18n();
+  const { theme, toggleTheme } = useTheme();
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -19,7 +23,12 @@ export default function LoginPage() {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Identifiants invalides');
+      const msg = err instanceof Error ? err.message : t.auth.invalid;
+      if (msg.toLowerCase().includes('identifiants') || msg.toLowerCase().includes('invalid')) {
+        setError(t.auth.invalid);
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -28,25 +37,37 @@ export default function LoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        <div className="auth-topbar">
+          <button
+            type="button"
+            className="btn btn--ghost btn--small"
+            onClick={() => setLocale(locale === 'fr' ? 'en' : 'fr')}
+          >
+            {locale === 'fr' ? 'EN' : 'FR'}
+          </button>
+          <button type="button" className="btn btn--ghost btn--small" onClick={toggleTheme}>
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
+        </div>
         <div className="brand brand--auth">
           <span className="brand__mark" aria-hidden="true">
             C
           </span>
           <span>
             <span className="brand__name">Calibre</span>
-            <span className="brand__tagline">Détecter, comprendre, progresser</span>
+            <span className="brand__tagline">{t.header.tagline}</span>
           </span>
         </div>
 
         <div className="auth-heading">
-          <span className="eyebrow">Espace sécurisé</span>
-          <h1>Reprendre l'entraînement</h1>
-          <p>Connectez-vous pour retrouver votre boîte de réception et vos exercices.</p>
+          <span className="eyebrow">{t.auth.eyebrow}</span>
+          <h1>{t.auth.title}</h1>
+          <p>{t.auth.subtitle}</p>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="field">
-            <span className="label">Adresse e-mail</span>
+            <span className="label">{t.auth.email}</span>
             <input
               className="input"
               type="email"
@@ -59,7 +80,7 @@ export default function LoginPage() {
           </label>
 
           <label className="field">
-            <span className="label">Mot de passe</span>
+            <span className="label">{t.auth.password}</span>
             <input
               className="input"
               type="password"
@@ -78,12 +99,12 @@ export default function LoginPage() {
           )}
 
           <button type="submit" className="btn btn--primary btn--block" disabled={loading}>
-            {loading ? 'Connexion...' : 'Se connecter'}
+            {loading ? t.auth.connecting : t.common.login}
           </button>
         </form>
 
         <div className="demo-accounts">
-          <span className="demo-accounts__title">Comptes de démonstration</span>
+          <span className="demo-accounts__title">{t.auth.demo}</span>
           <code>learner.a1@calibre.test · password123</code>
           <code>manager.alpha@calibre.test · password123</code>
         </div>

@@ -4,10 +4,12 @@ import LoginPage from './pages/LoginPage';
 import InboxPage from './pages/InboxPage';
 import DashboardPage from './pages/DashboardPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import { useI18n } from './context/I18nContext';
 
 function HomeRedirect() {
   const { user, loading } = useAuth();
-  if (loading) return <div className="page-loading">Chargement...</div>;
+  const { t } = useI18n();
+  if (loading) return <div className="page-loading">{t.common.loading}</div>;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === 'manager') return <Navigate to="/dashboard" replace />;
   return <Navigate to="/inbox" replace />;
