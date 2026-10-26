@@ -82,7 +82,13 @@ export class StatsService {
           averageScore: stats.count === 0 ? 0 : Math.round(stats.totalScore / stats.count),
         };
       })
-      .sort((a, b) => b.correctCount - a.correctCount || b.answersCount - a.answersCount)
+      .sort(
+        (a, b) =>
+          b.correctCount - a.correctCount ||
+          b.answersCount - a.answersCount ||
+          b.accuracy - a.accuracy ||
+          a.email.localeCompare(b.email),
+      )
       .slice(0, 6);
 
     const heatmap: HeatmapCell[] = [];

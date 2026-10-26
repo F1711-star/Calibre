@@ -82,6 +82,7 @@ export default function InboxPage() {
     setSubmitting(true);
     setError('');
     try {
+      const payloadHighlights = highlights.map((h) => ({ start: h.start, end: h.end }));
       const answer = await apiFetch<AnswerResult>('/answers', {
         method: 'POST',
         body: JSON.stringify({
@@ -89,7 +90,7 @@ export default function InboxPage() {
           verdict,
           technique,
           explanation,
-          highlights,
+          highlights: payloadHighlights,
         }),
       });
       setResult(answer);
@@ -141,8 +142,8 @@ export default function InboxPage() {
           <section className="panel empty-state">
             <span className="empty-state__icon">✓</span>
             <h2>Tous les contenus ont été traités</h2>
-            <p>Vous avez terminé la banque d'exercices disponible. Les prochains contenus arriveront bientôt.</p>
-            <button type="button" className="btn btn--primary" onClick={() => { setError(''); void loadNext(); }}>
+            <p>Vous avez terminé tous les contenus disponibles pour votre compte. Si de nouveaux exercices sont ajoutés, utilisez le bouton ci-dessous pour vérifier.</p>
+            <button type="button" className="btn btn--primary" onClick={() => { setError(''); setLoading(true); void loadNext(); }}>
               Vérifier à nouveau
             </button>
           </section>

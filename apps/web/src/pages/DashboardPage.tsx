@@ -66,8 +66,12 @@ export default function DashboardPage() {
                 </section>
                 <section className="panel stat-card">
                   <span className="stat-card__label">Réponses justes</span>
-                  <span className="stat-card__value stat-card__value--success">{data.totals.correctCount}</span>
-                  <span className="stat-card__hint">Verdict + technique corrects</span>
+                  <span className="stat-card__value stat-card__value--success">
+                    {data.totals.correctCount} / {data.totals.answersCount}
+                  </span>
+                  <span className="stat-card__hint">
+                    Verdict + technique corrects ({data.totals.answersCount === 0 ? 0 : Math.round((data.totals.correctCount / data.totals.answersCount) * 100)}%)
+                  </span>
                 </section>
                 <section className="panel stat-card">
                   <span className="stat-card__label">Score de maturité</span>
@@ -121,7 +125,7 @@ export default function DashboardPage() {
                     <div>
                       <span className="eyebrow">Classement</span>
                       <h2>Top contributeurs</h2>
-                      <p>Triés par nombre de réponses justes.</p>
+                      <p>Triés par nombre de réponses justes (décroissant).</p>
                     </div>
                   </div>
                   <div className="ranking-list">
