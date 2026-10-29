@@ -96,7 +96,6 @@ docs/
   appris.md
   decisions.md
 docker-compose.yml
-plan.txt
 ```
 
 ## Limites
@@ -105,4 +104,4 @@ plan.txt
 - LLM optionnel : uniquement pour noter l'explication et proposer une version améliorée.
 - Données 100 % fictives.
 
-Voir `plan.txt` pour le détail du parcours et `docs/appris.md` pour le journal d'apprentissage.
+Voir `docs/appris.md` pour le journal d'apprentissage et `docs/decisions.md` pour les choix d'architecture.
