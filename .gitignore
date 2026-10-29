@@ -44,3 +44,10 @@ docker-data
 temp
 cache
 cahier_charge.pdf
+
+# Documents internes du projet
+/phase1.txt
+/plan.txt
+/requirements_list.txt
+/schedule.txt
+/uc_description.txt
